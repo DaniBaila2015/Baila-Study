@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daniel Secret Space</title>
+    <style>
+        body { margin: 0; background: #fff; height: 100vh; overflow: hidden; font-family: Arial, sans-serif; }
+        .bola { position: absolute; border-radius: 50%; z-index: 10; }
+        .b1 { width: 50px; height: 50px; background: #ff595e; top: 10px; left: 10px; }
+        .b2 { width: 35px; height: 35px; background: #ffca3a; top: 15px; left: 80px; }
+        .b3 { width: 45px; height: 45px; background: #8ac926; top: 10px; right: 20px; }
+        .b4 { width: 30px; height: 30px; background: #1982c4; top: 50%; left: 10px; }
+        .b5 { width: 40px; height: 40px; background: #6a4c93; top: 40%; right: 10px; }
+        
+        /* Bolinha Laranja Fixa */
+        .bolinha-secreta { width: 16px; height: 16px; background: #ff924a; position: fixed; bottom: 15px; right: 15px; cursor: pointer; z-index: 1000; }
+        
+        /* Scanner Holográfico */
+        #scanner-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 220px; border-radius: 50%; border: 5px solid #00f0ff; box-shadow: 0 0 20px #00f0ff; overflow: hidden; z-index: 20; background: radial-gradient(circle, #002b47, #010811); }
+        #holograma { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #00f0ff; font-size: 50px; animation: piscar 1s infinite alternate; }
+        .laser { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #00f0ff; box-shadow: 0 0 10px #00f0ff; animation: scanear 2s infinite ease-in-out; }
+        #status-texto, #espera-texto { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #888; text-align: center; z-index: 15; }
+        #status-texto { top: calc(50% + 130px); color: #00f0ff; font-size: 14px; z-index: 20; }
+
+        /* Painel do Editor Secreto */
+        #zona-secreta { display: none; flex-direction: column; width: 100vw; height: 100vh; background: #1e1e1e; padding: 20px; box-sizing: border-box; z-index: 50; position: absolute; top: 0; left: 0; }
+        #zona-secreta h2 { color: #fff; margin: 0 0 10px 0; font-size: 20px; }
+        .editor-menu { margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+        .btn { color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #codigo-area { width: 100%; flex: 1; background: #2d2d2d; color: #f8f8f2; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 14px; resize: none; margin-bottom: 15px; box-sizing: border-box; }
+        #pagina-publicada { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; border: none; background: white; z-index: 1; display: none; }
+
+        @keyframes scanear { 0%, 100% { top: 0%; } 50% { top: 100%; } }
+        @keyframes piscar { from { opacity: 0.3; } to { opacity: 0.7; } }
+    </style>
+</head>
+<body>
+
+    <iframe id="pagina-publicada"></iframe>
+
+    <!-- Moldura de bolinhas -->
+    <div class="bola b1 moldura-inicial"></div>
+    <div class="bola b2 moldura-inicial"></div>
+    <div class="bola b3 moldura-inicial"></div>
+    <div class="bola b4 moldura-inicial"></div>
+    <div class="bola b5 moldura-inicial"></div>
+
+    <div class="bola bolinha-secreta" onclick="botaoPremido()"></div>
+    <div id="espera-texto">⚙️ A INICIAR MÓDULOS DE BIOMETRIA...</div>
+
+    <div id="scanner-container">
+        <div id="holograma">👤</div>
+        <div class="laser"></div>
+    </div>
+    <div id="status-texto">A SCANEAR ROSTO E OLHOS AZUIS...</div>
+
+    <!-- PAINEL DO EDITOR -->
+    <div id="zona-secreta">
+        <h2>🛠️ Daniel's Dev Space</h2>
+        <div class="editor-menu">
+            <button class="btn" style="background:#2196f3" onclick="novoFicheiro()">📄 Novo Ficheiro</button>
+            <button class="btn" style="background:#4caf50" onclick="salvarEApplicar()">💾 Salvar e Aplicar</button>
+            <button class="btn" style="background:#f44336" onclick="document.getElementById('codigo-area').value='' ">🗑️ Limpar</button>
+            <span id="nome-exibicao" style="color:#aaa; font-family:monospace; margin-left:auto;">index.html</span>
+        </div>
+        <textarea id="codigo-area" placeholder="Escreve o teu código HTML aqui..."></textarea>
+    </div>
+
+    <script>
+        let ModoDaniel = false, sistemaIniciado = false, logado = false, tempoEspera, nomeFicheiro = "index.html";
+
+        window.onload = function() {
+            if (localStorage.getItem('codDaniel')) publicar(localStorage.getItem('codDaniel'));
+        };
+
+        function botaoPremido() {
+            if (logado) {
+                logado = false;
+                document.getElementById('zona-secreta').style.display = 'none';
+                if (!localStorage.getItem('codDaniel')) document.querySelectorAll('.moldura-inicial').forEach(el => el.style.display = 'block');
+                return;
+            }
+            if (!sistemaIniciado) {
+                sistemaIniciado = true; ModoDaniel = false;
+                document.getElementById('espera-texto').style.display = 'block';
+                tempoEspera = setTimeout(() => {
+                    document.getElementById('espera-texto').style.display = 'none';
+                    document.getElementById('scanner-container').style.display = 'block';
+                    document.getElementById('status-texto').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        document.getElementById('scanner-container').style.display = 'none';
+                        document.getElementById('status-texto').style.display = 'none';
+                        sistemaIniciado = false;
+                        if (ModoDaniel) { alert("🔓 ACESSO CONCEDIDO!"); abrirEditor(); } 
+                        else { alert("❌ ACESSO NEGADO!"); }
+                    }, 2500);
+                }, 2000);
+            } else { ModoDaniel = true; }
+        }
+
+        function abrirEditor() {
+            logado = true;
+            document.querySelectorAll('.moldura-inicial').forEach(el => el.style.display = 'none');
+            document.getElementById('zona-secreta').style.display = 'flex';
+            if (localStorage.getItem('codDaniel') && document.getElementById('codigo-area').value === "") {
+                document.getElementById('codigo-area').value = localStorage.getItem('codDaniel');
+            }
+        }
+
+        function novoFicheiro() {
+            let nome = prompt("Nome do ficheiro:", "jogo.html");
+            if (nome) {
+                nomeFicheiro = nome;
+                document.getElementById('nome-exibicao').innerText = nome;
+                document.getElementById('codigo-area').value = `<h1>Projeto: ${nome}</h1>`;
+            }
+        }
+
+        function salvarEApplicar() {
+            let cod = document.getElementById('codigo-area').value;
+            localStorage.setItem('codDaniel', cod);
+            publicar(cod);
+            alert("🚀 Aplicado como Página Principal!");
+            botaoPremido();
+        }
+
+        function publicar(cod) {
+            let frame = document.getElementById('pagina-publicada');
+            frame.style.display = 'block';
+            document.querySelectorAll('.moldura-inicial').forEach(el => el.style.display = 'none');
+            let doc = frame.contentDocument || frame.contentWindow.document;
+            doc.open(); doc.write(cod); doc.close();
+        }
+    </script>
+</body>
+</html>
